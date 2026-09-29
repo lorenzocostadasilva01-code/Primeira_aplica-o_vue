@@ -1,5 +1,4 @@
 <script setup>
-import MeuBotao from './components/MeuBotao.vue'
 import FormularioTeste from './components/FormularioTeste.vue'
 </script>
 

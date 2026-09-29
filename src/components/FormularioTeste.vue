@@ -1,83 +1,94 @@
 <script setup>
-import {ref} from 'vue'
+import { ref } from 'vue'
 
-const nome = ref("")
-const email = ref("")
-const nivel = ref("Iniciante")
-const aceitouTermos = ref(false)
+const nome = ref('')
+const email = ref('')
 
 const dadosEnviados = ref(null)
+const mensagemErro = ref(null)
+const carregando = ref(false)
 
-function submeterFormulario(){
-    dadosEnviados.value = {
-        nome: nome.value,
-        email: email.value,
-        nivel: nivel.value,
-        aceitouTermos: aceitouTermos.value
+async function submeterFormulario() {
+  carregando.value = true
+  mensagemErro.value = null
+  dadosEnviados.value = null
+
+  const dadosFormulario = {
+    nome: nome.value,
+    email: email.value
+  }
+
+  try {
+    const resposta = await fetch('http://localhost/back/api/api.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dadosFormulario)
+    })
+
+    const resultado = await resposta.json()
+
+    if (!resposta.ok) {
+      throw new Error(resultado.mensagem || 'Erro ao enviar dados para o servidor.')
     }
-    nome.value = ""
-    email.value = ""
-    nivel.value = "Iniciante"
-    aceitouTermos.value = false
+
+    dadosEnviados.value = resultado.dadosRecebidos || resultado
+
+    nome.value = ''
+    email.value = ''
+  } catch (erro) {
+    mensagemErro.value = erro.message
+  } finally {
+    carregando.value = false
+  }
 }
 </script>
+
 <template>
   <div class="container">
     <h2>Formulário de Teste</h2>
 
-    <!-- .prevent impede o recarregamento padrão da página -->
     <form @submit.prevent="submeterFormulario" class="form">
       <div class="campo">
         <label for="nome">Nome:</label>
-        <input 
-          id="nome" 
-          v-model="nome" 
-          type="text" 
-          placeholder="Digita o teu nome" 
-          required 
+        <input
+          id="nome"
+          v-model="nome"
+          type="text"
+          placeholder="Digite o seu nome"
+          required
         />
       </div>
 
       <div class="campo">
         <label for="email">E-mail:</label>
-        <input 
-          id="email" 
-          v-model="email" 
-          type="email" 
-          placeholder="exemplo@email.com" 
-          required 
+        <input
+          id="email"
+          v-model="email"
+          type="email"
+          placeholder="exemplo@email.com"
+          required
         />
       </div>
 
-      <div class="campo">
-        <label for="nivel">Nível em Vue:</label>
-        <select id="nivel" v-model="nivel">
-          <option value="Iniciante">Iniciante</option>
-          <option value="Intermediário">Intermediário</option>
-          <option value="Avançado">Avançado</option>
-        </select>
-      </div>
-
-      <div class="campo-checkbox">
-        <label>
-          <input type="checkbox" v-model="aceitouTermos" required />
-          Aceito os termos de teste
-        </label>
-      </div>
-
-      <button type="submit" class="btn-submeter">Enviar Dados</button>
+      <button type="submit" class="btn-submeter" :disabled="carregando">
+        {{ carregando ? 'A enviar...' : 'Enviar Dados' }}
+      </button>
     </form>
 
-    <!-- Exibição do resultado do formulário -->
+    <div v-if="mensagemErro" class="erro">
+      <p><strong>Erro:</strong> {{ mensagemErro }}</p>
+    </div>
+
     <div v-if="dadosEnviados" class="resultado">
-      <h3>Dados Recebidos com Sucesso:</h3>
+      <h3>Dados enviados com sucesso!</h3>
       <p><strong>Nome:</strong> {{ dadosEnviados.nome }}</p>
       <p><strong>E-mail:</strong> {{ dadosEnviados.email }}</p>
-      <p><strong>Nível:</strong> {{ dadosEnviados.nivel }}</p>
-      <p><strong>Termos Aceites:</strong> {{ dadosEnviados.aceitouTermos ? 'Sim' : 'Não' }}</p>
     </div>
   </div>
 </template>
+
 <style scoped>
 .container {
   max-width: 400px;
@@ -100,16 +111,10 @@ function submeterFormulario(){
   gap: 5px;
 }
 
-.campo input,
-.campo select {
+.campo input {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-.campo-checkbox {
-  display: flex;
-  align-items: center;
 }
 
 .btn-submeter {
@@ -122,8 +127,13 @@ function submeterFormulario(){
   font-weight: bold;
 }
 
-.btn-submeter:hover {
+.btn-submeter:hover:not(:disabled) {
   background-color: #33a06f;
+}
+
+.btn-submeter:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .resultado {
@@ -131,6 +141,15 @@ function submeterFormulario(){
   padding: 15px;
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
+  border-radius: 6px;
+}
+
+.erro {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
   border-radius: 6px;
 }
 </style>
