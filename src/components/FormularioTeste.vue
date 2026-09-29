@@ -71,167 +71,295 @@ function voltarAoFormulario() {
 </script>
 
 <template>
-  <div v-if="telaAtual === 'form'" class="container">
-    <h2>Formulário de Teste</h2>
-
-    <form @submit.prevent="submeterFormulario" class="form">
-      <div class="campo">
-        <label for="nome">Nome:</label>
-        <input id="nome" v-model="nome" type="text" placeholder="Digite o seu nome" required />
+  <div v-if="telaAtual === 'form'" class="page-shell">
+    <div class="card form-card">
+      <div class="header">
+        <span class="badge">Cadastro</span>
+        <h2>Formulário de Teste</h2>
       </div>
 
-      <div class="campo">
-        <label for="email">E-mail:</label>
-        <input id="email" v-model="email" type="email" placeholder="exemplo@email.com" required />
-      </div>
+      <form @submit.prevent="submeterFormulario" class="form">
+        <div class="campo">
+          <label for="nome">Nome</label>
+          <input id="nome" v-model="nome" type="text" placeholder="Digite o seu nome" required />
+        </div>
 
-      <button type="submit" class="btn-submeter" :disabled="carregando">
-        {{ carregando ? 'A enviar...' : 'Enviar Dados' }}
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input id="email" v-model="email" type="email" placeholder="exemplo@email.com" required />
+        </div>
+
+        <button type="submit" class="btn-primary" :disabled="carregando">
+          {{ carregando ? 'A enviar...' : 'Enviar dados' }}
+        </button>
+      </form>
+
+      <button class="btn-secondary" @click="verTodosOsDados">
+        Ver todos os dados
       </button>
-    </form>
 
-    <button class="btn-listar" @click="verTodosOsDados">
-      Ver todos os dados
-    </button>
+      <div v-if="mensagemErro" class="alert erro">
+        <strong>Erro:</strong> {{ mensagemErro }}
+      </div>
 
-    <div v-if="mensagemErro" class="erro">
-      <p><strong>Erro:</strong> {{ mensagemErro }}</p>
-    </div>
-
-    <div v-if="dadosEnviados" class="resultado">
-      <h3>Dados enviados com sucesso!</h3>
-      <p><strong>Nome:</strong> {{ dadosEnviados.nome }}</p>
-      <p><strong>E-mail:</strong> {{ dadosEnviados.email }}</p>
+      <div v-if="dadosEnviados" class="alert sucesso">
+        <h3>Dados enviados</h3>
+        <p><strong>Nome:</strong> {{ dadosEnviados.nome }}</p>
+        <p><strong>E-mail:</strong> {{ dadosEnviados.email }}</p>
+      </div>
     </div>
   </div>
 
-  <div v-else class="container tabela-container">
-    <h2>Lista de nomes salvos</h2>
+  <div v-else class="page-shell">
+    <div class="card table-card">
+      <div class="header">
+        <span class="badge badge-blue">Lista</span>
+        <h2>Usuários salvos</h2>
+      </div>
 
-    <div v-if="mensagemErro" class="erro">
-      <p><strong>Erro:</strong> {{ mensagemErro }}</p>
+      <div v-if="mensagemErro" class="alert erro">
+        <strong>Erro:</strong> {{ mensagemErro }}
+      </div>
+
+      <div class="table-wrapper" v-if="listaUsuarios.length">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>E-mail</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="usuario in listaUsuarios" :key="usuario.id">
+              <td>{{ usuario.id }}</td>
+              <td>{{ usuario.nome }}</td>
+              <td>{{ usuario.email }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p v-else class="empty-state">Nenhum nome encontrado.</p>
+
+      <button class="btn-secondary" @click="voltarAoFormulario">
+        Voltar ao formulário
+      </button>
     </div>
-
-    <table v-if="listaUsuarios.length" class="tabela">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nome</th>
-          <th>E-mail</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="usuario in listaUsuarios" :key="usuario.id">
-          <td>{{ usuario.id }}</td>
-          <td>{{ usuario.nome }}</td>
-          <td>{{ usuario.email }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p v-else class="vazio">Nenhum nome encontrado.</p>
-
-    <button class="btn-voltar" @click="voltarAoFormulario">
-      Voltar ao formulário
-    </button>
   </div>
 </template>
 
 <style scoped>
-.container {
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-family: sans-serif;
+:global(body) {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7ff 0%, #e0f2fe 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.card {
+  width: min(100%, 560px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(10px);
+  padding: 28px;
+}
+
+.table-card {
+  width: min(100%, 780px);
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+h2 {
+  margin: 12px 0 0;
+  font-size: 2rem;
+  color: #0f172a;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
-.campo input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
 }
 
-.btn-submeter,
-.btn-listar,
-.btn-voltar {
-  background-color: #42b883;
-  color: white;
+input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  background: #fff;
+}
+
+button {
   border: none;
-  padding: 10px;
-  border-radius: 4px;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
-.btn-listar,
-.btn-voltar {
-  background-color: #2563eb;
+button:hover {
+  transform: translateY(-1px);
 }
 
-.btn-submeter:hover:not(:disabled) {
-  background-color: #33a06f;
+.btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
 }
 
-.btn-submeter:disabled {
-  opacity: 0.6;
+.btn-primary:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
 }
 
-.resultado {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
+.btn-secondary {
+  margin-top: 18px;
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.2);
+}
+
+.alert {
+  margin-top: 22px;
+  border-radius: 14px;
+  padding: 16px 18px;
+  font-size: 0.95rem;
+}
+
+.alert h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.alert p {
+  margin: 6px 0;
 }
 
 .erro {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #fef2f2;
+  background: #fef2f2;
   border: 1px solid #fecaca;
   color: #991b1b;
-  border-radius: 6px;
 }
 
-.tabela-container {
-  max-width: 700px;
+.sucesso {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
 }
 
 .tabela {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
 }
 
 .tabela th,
 .tabela td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
   text-align: left;
 }
 
 .tabela th {
-  background-color: #f3f4f6;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 700;
 }
 
-.vazio {
-  margin-top: 20px;
-  color: #666;
+.tabela tbody tr:hover {
+  background: #f8fafc;
+}
+
+.empty-state {
+  margin: 22px 0 0;
+  color: #64748b;
+  text-align: center;
+  padding: 18px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    font-size: 0.95rem;
+  }
 }
 </style>
