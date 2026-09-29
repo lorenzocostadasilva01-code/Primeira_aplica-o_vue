@@ -1,15 +1,12 @@
 <script setup>
 import MeuBotao from './components/MeuBotao.vue'
+import FormularioTeste from './components/FormularioTeste.vue'
 </script>
 
 <template>
   <main>
-
-    <h1>A minha aplicação Vue</h1>
-
-  <meu-botao texto="Confirmar"></meu-botao>
-  <meu-botao></meu-botao>
+    <formulario-teste></formulario-teste>
   </main>
-</template>
+  </template>
 
 <style scoped></style>
